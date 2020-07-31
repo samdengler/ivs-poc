@@ -1,0 +1,10 @@
+[
+  {
+    "Source": "my.aws.ivs",
+    "DetailType": "IVS Stream State Change",
+    "Resources": [
+      "arn:aws:ivs:us-west-2:123456789012:channel/X54kdkG1M12G"
+    ],
+    "Detail": "{ \"event_name\": \"Stream Start\" }"
+  }
+]

@@ -1,0 +1,83 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+  SecurityGroupIds:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+
+Resources:
+  ## Lambda Proxy Function ##
+  IvsProxyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: app/
+      Handler: proxy.handler
+      Runtime: nodejs12.x
+      Policies:
+        - AWSLambdaVPCAccessExecutionRole
+      VpcConfig:
+        SecurityGroupIds: !Ref SecurityGroupIds
+        SubnetIds: !Ref SubnetIds
+      Environment:
+        Variables:
+          ApplicationLoadBalancerDNSName: !GetAtt ApplicationLoadBalancer.DNSName
+      Events:
+        Rule:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: default
+            Pattern:
+              source:
+                - "aws.ivs"
+                - "my.aws.ivs" 
+    
+  ## Application Load Balancer ##
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internal
+      SecurityGroups: !Ref SecurityGroupIds
+      Subnets: !Ref SubnetIds
+
+  ApplicationLoadBalancerHttpListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties: 
+      Port: 80
+      Protocol: HTTP
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref StreamHandlerFunctionTargetGroup
+
+  ## Application Load Balancer Lambda Target
+  StreamHandlerFunctionTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      TargetType: lambda
+      Targets:
+        - Id: !GetAtt StreamHandlerFunction.Arn
+
+  StreamHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: app/
+      Handler: log.handler
+      Runtime: nodejs12.x
+      Policies:
+        - AWSLambdaVPCAccessExecutionRole
+      VpcConfig:
+        SecurityGroupIds: !Ref SecurityGroupIds
+        SubnetIds: !Ref SubnetIds
+
+  ApplicationLoadBalancerPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt StreamHandlerFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: elasticloadbalancing.amazonaws.com
+  
+  ## TODO ##
+  # SecurityGroup for Lambda
+  # SecurityGroup for ALB that references Lambda.SG
