@@ -1,0 +1,10 @@
+{
+    "sourceVideoUrl": "https://fsd-share.s3.amazonaws.com/Jellyfish_720_10s_2MB.mp4",
+    "streamLoopCount": 12,
+    "channel": {
+        "channelArn": "arn:aws:ivs:us-east-1:068896461592:channel/FVBHKKRi6svI",
+        "ingestEndpoint": "73dab2d2a26b.global-contribute.live-video.net",
+        "playbackUrl": "https://73dab2d2a26b.us-east-1.playback.live-video.net/api/video/v1/us-east-1.068896461592.channel.FVBHKKRi6svI.m3u8",
+        "streamKey": "sk_us-east-1_XZWIEVOAjtb3_nXD8RDSVJZE1CQDgnloeTkA4pAn4FO"
+    }
+}

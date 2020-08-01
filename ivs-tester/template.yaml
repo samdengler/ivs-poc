@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  ffmpegLambdaLayer:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location:
+        ApplicationId: 'arn:aws:serverlessrepo:us-east-1:145266761615:applications/ffmpeg-lambda-layer'
+        SemanticVersion: 1.0.0
+  
+  LambdaRtmpStreamFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: rtmp/
+      Handler: rtmp.start_stream_handler
+      Runtime: python3.8
+      MemorySize: 3008
+      Timeout: 900
+      Layers:
+        - !GetAtt ffmpegLambdaLayer.Outputs.LayerVersion
+  
+  CreateChannelFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: app/
+      Handler: ivs.createChannelHandler
+      Runtime: nodejs12.x
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - ivs:CreateChannel
+              Resource: '*'
+
+  DeleteChannelFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: app/
+      Handler: ivs.deleteChannelHandler
+      Runtime: nodejs12.x
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - ivs:DeleteChannel
+              Resource: '*'
+
+  IvsRtmpWorkflow:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      DefinitionUri: app/workflow.asl.json
+      DefinitionSubstitutions:
+        CreateChannelFunctionArn: !GetAtt CreateChannelFunction.Arn
+        DeleteChannelFunctionArn: !GetAtt DeleteChannelFunction.Arn
+        LambdaRtmpStreamFunctionArn: !GetAtt LambdaRtmpStreamFunction.Arn
+      Policies:
+        - LambdaInvokePolicy:
+            FunctionName: !Ref CreateChannelFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref DeleteChannelFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref LambdaRtmpStreamFunction
+
+## TODO
+# ffprobe in parallel?
+# Notification of PlayerURL?
+# Human approval before Delete Channel

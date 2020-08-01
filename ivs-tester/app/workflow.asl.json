@@ -1,0 +1,27 @@
+{
+  "StartAt": "CreateChannel",
+  "States": {
+    "CreateChannel": {
+      "Type": "Task",
+      "Resource": "${CreateChannelFunctionArn}",
+      "Parameters": {
+        "executionId.$": "$$.Execution.Id",
+        "sourceVideoUrl.$": "$.sourceVideoUrl",
+        "streamLoopCount.$": "$.streamLoopCount"
+      },
+      "ResultPath": "$.channel",
+      "Next": "StartStream"
+    },
+    "StartStream": {
+      "Type": "Task",
+      "Resource": "${LambdaRtmpStreamFunctionArn}",
+      "ResultPath": null,
+      "Next": "DeleteChannel"
+    },
+    "DeleteChannel": {
+      "Type": "Task",
+      "Resource": "${DeleteChannelFunctionArn}",
+      "End": true
+    }
+  }
+}
