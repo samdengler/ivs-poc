@@ -33,13 +33,34 @@ Resources:
               source:
                 - "aws.ivs"
                 - "my.aws.ivs" 
-    
+
   IvsProxyFunctionSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Identify IvsProxyFunction
       VpcId: !Ref VpcId
 
+  ## IVS EventBridge Logging
+  IvsAllLogRule:
+    Type: AWS::Events::Rule
+    Properties:
+      EventBusName: default
+      Name: IvsAllLogRule
+      EventPattern:
+        source:
+          - "aws.ivs"
+          - "my.aws.ivs" 
+      Targets:
+        - Id: 'CloudWatchLogs'
+          # Arn: !GetAtt IvsAllLogGroup.Arn
+          Arn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${IvsAllLogGroup}"
+
+  IvsAllLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 3
+      LogGroupName: '/aws/events/ivs/all'
+    
   ## Application Load Balancer ##
   ApplicationLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -105,6 +126,6 @@ Resources:
       Principal: elasticloadbalancing.amazonaws.com
   
   ## TODO ##
-  # LogGroup for EB Rule
+  # LogGroup for EB Rule - how to do this with SAM?  don't add another Rule/Target
   # Move from LogFunction to StreamHandler and add SNS vs EB 
   # Lambda Tester
