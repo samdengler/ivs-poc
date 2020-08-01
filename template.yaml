@@ -2,10 +2,10 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 
 Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
   SubnetIds:
     Type: List<AWS::EC2::Subnet::Id>
-  SecurityGroupIds:
-    Type: List<AWS::EC2::SecurityGroup::Id>
 
 Resources:
   ## Lambda Proxy Function ##
@@ -18,7 +18,8 @@ Resources:
       Policies:
         - AWSLambdaVPCAccessExecutionRole
       VpcConfig:
-        SecurityGroupIds: !Ref SecurityGroupIds
+        SecurityGroupIds:
+          - !GetAtt IvsProxyFunctionSecurityGroup.GroupId
         SubnetIds: !Ref SubnetIds
       Environment:
         Variables:
@@ -33,13 +34,31 @@ Resources:
                 - "aws.ivs"
                 - "my.aws.ivs" 
     
+  IvsProxyFunctionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Identify IvsProxyFunction
+      VpcId: !Ref VpcId
+
   ## Application Load Balancer ##
   ApplicationLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       Scheme: internal
-      SecurityGroups: !Ref SecurityGroupIds
+      SecurityGroups:
+        - !GetAtt ApplicationLoadBalancerSecurityGroup.GroupId
       Subnets: !Ref SubnetIds
+
+  ApplicationLoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Application Load Balancer
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - SourceSecurityGroupId: !GetAtt IvsProxyFunctionSecurityGroup.GroupId
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
 
   ApplicationLoadBalancerHttpListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -68,8 +87,15 @@ Resources:
       Policies:
         - AWSLambdaVPCAccessExecutionRole
       VpcConfig:
-        SecurityGroupIds: !Ref SecurityGroupIds
+        SecurityGroupIds:
+          - !GetAtt StreamHandlerFunctionSecurityGroup.GroupId
         SubnetIds: !Ref SubnetIds
+
+  StreamHandlerFunctionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Identify StreamHandlerFunction
+      VpcId: !Ref VpcId
 
   ApplicationLoadBalancerPermission:
     Type: AWS::Lambda::Permission
@@ -79,5 +105,6 @@ Resources:
       Principal: elasticloadbalancing.amazonaws.com
   
   ## TODO ##
-  # SecurityGroup for Lambda
-  # SecurityGroup for ALB that references Lambda.SG
+  # LogGroup for EB Rule
+  # Move from LogFunction to StreamHandler and add SNS vs EB 
+  # Lambda Tester

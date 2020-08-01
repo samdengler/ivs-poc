@@ -126,4 +126,5 @@ $RECYCLE.BIN/
 *.lnk
 
 
-# End of https://www.gitignore.io/api/osx,node,linux,windowssamconfig.tom
+# End of https://www.gitignore.io/api/osx,node,linux,window
+samconfig.toml
