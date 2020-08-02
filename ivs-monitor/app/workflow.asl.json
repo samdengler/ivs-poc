@@ -4,6 +4,16 @@
     "GetStream": {
       "Type": "Task",
       "Resource": "${IvsGetStreamFunctionArn}",
+      "Next": "Wait"
+    },
+    "Wait": {
+      "Type": "Wait",
+      "Seconds": 30,
+      "Next": "StopStream"
+    },
+    "StopStream": {
+      "Type": "Task",
+      "Resource": "${IvsStopStreamFunctionArn}",
       "End": true
     }
   }

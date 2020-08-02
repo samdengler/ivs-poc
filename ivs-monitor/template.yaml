@@ -6,7 +6,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: app/
-      Handler: index.lambdaHandler
+      Handler: ivs.getStreamHandler
       Runtime: nodejs12.x
       Policies:
         - Version: '2012-10-17'
@@ -16,6 +16,20 @@ Resources:
                 - ivs:GetStream
               Resource: '*'
   
+  IvsStopStreamFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: app/
+      Handler: ivs.stopStreamHandler
+      Runtime: nodejs12.x
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - ivs:StopStream
+              Resource: '*'
+
   ## IVS Start Stream 
   IvsStartStreamMonitorWorkflow:
     Type: AWS::Serverless::StateMachine
@@ -23,9 +37,12 @@ Resources:
       DefinitionUri: app/workflow.asl.json
       DefinitionSubstitutions:
         IvsGetStreamFunctionArn: !GetAtt IvsGetStreamFunction.Arn
+        IvsStopStreamFunctionArn: !GetAtt IvsStopStreamFunction.Arn
       Policies:
         - LambdaInvokePolicy:
             FunctionName: !Ref IvsGetStreamFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref IvsStopStreamFunction
       Events:
         Rule:
           Type: EventBridgeRule
