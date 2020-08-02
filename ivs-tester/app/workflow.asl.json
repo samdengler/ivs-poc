@@ -7,7 +7,7 @@
       "Parameters": {
         "executionId.$": "$$.Execution.Id",
         "sourceVideoUrl.$": "$.sourceVideoUrl",
-        "streamLoopCount.$": "$.streamLoopCount"
+        "streamTimeoutSeconds.$": "$.streamTimeoutSeconds"
       },
       "ResultPath": "$.channel",
       "Next": "StartStream"
@@ -16,12 +16,27 @@
       "Type": "Task",
       "Resource": "${LambdaRtmpStreamFunctionArn}",
       "ResultPath": null,
+      "Catch": [ {
+        "ErrorEquals": ["CalledProcessError"],
+        "ResultPath": null,
+        "Next": "StreamStopped"
+      }],
+      "Next": "StreamSucceeded"
+    },
+    "StreamSucceeded": {
+      "Type": "Pass",
+      "ResultPath": null,
       "Next": "DeleteChannel"
     },
     "DeleteChannel": {
       "Type": "Task",
       "Resource": "${DeleteChannelFunctionArn}",
       "End": true
+    },
+    "StreamStopped": {
+      "Type": "Pass",
+      "ResultPath": null,
+      "Next": "DeleteChannel"
     }
   }
 }

@@ -1,0 +1,15 @@
+{
+    "version": "0",
+    "id": "0b639eaf-dce4-6519-601e-a2133108291e",
+    "detail-type": "IVS Stream State Change",
+    "source": "aws.ivs",
+    "account": "068896461592",
+    "time": "2020-08-01T20:41:56Z",
+    "region": "us-east-1",
+    "resources": [
+        "arn:aws:ivs:us-east-1:068896461592:channel/t5b8ZIEZgOMu"
+    ],
+    "detail": {
+        "event_name": "Stream Start"
+    }
+}

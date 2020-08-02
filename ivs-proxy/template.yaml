@@ -46,7 +46,7 @@ Resources:
     Type: AWS::Events::Rule
     Properties:
       EventBusName: default
-      Name: !Sub "${AWS::AccountId}-IvsAllLogs"
+      Name: !Sub "${AWS::StackName}-IvsAllLogs"
       EventPattern:
         source:
           - "aws.ivs"
@@ -59,14 +59,14 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 3
-      LogGroupName: '/aws/events/ivs/all'
+      LogGroupName: !Sub '/aws/events/${AWS::StackName}/ivs/all'
     
   ## IVS Stream EventBridge Logging
   IvsStreamLogRule:
     Type: AWS::Events::Rule
     Properties:
       EventBusName: default
-      Name: !Sub "${AWS::AccountId}-IvsStreamLogs"
+      Name: !Sub "${AWS::StackName}-IvsStreamLogs"
       EventPattern:
         source:
           - "aws.ivs"
@@ -81,7 +81,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 3
-      LogGroupName: '/aws/events/ivs/stream'
+      LogGroupName: !Sub '/aws/events/${AWS::StackName}/ivs/stream'
     
   ## Application Load Balancer ##
   ApplicationLoadBalancer:

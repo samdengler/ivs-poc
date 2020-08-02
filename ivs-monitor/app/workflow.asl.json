@@ -1,0 +1,10 @@
+{
+  "StartAt": "GetStream",
+  "States": {
+    "GetStream": {
+      "Type": "Task",
+      "Resource": "${IvsGetStreamFunctionArn}",
+      "End": true
+    }
+  }
+}

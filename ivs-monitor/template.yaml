@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  IvsGetStreamFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: app/
+      Handler: index.lambdaHandler
+      Runtime: nodejs12.x
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - ivs:GetStream
+              Resource: '*'
+  
+  ## IVS Start Stream 
+  IvsStartStreamMonitorWorkflow:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      DefinitionUri: app/workflow.asl.json
+      DefinitionSubstitutions:
+        IvsGetStreamFunctionArn: !GetAtt IvsGetStreamFunction.Arn
+      Policies:
+        - LambdaInvokePolicy:
+            FunctionName: !Ref IvsGetStreamFunction
+      Events:
+        Rule:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: default
+            Pattern:
+              source:
+                - "aws.ivs"
+              detail-type:
+                - "IVS Stream State Change"
+              detail:
+                event_name:
+                  - "Stream Start"
+
+## TODO
+# handle stream that has already ended - test in ASL or add "exists" field?
+# conditional.  if running, stop stream
+# build wait state - variable wait on seconds?  or need to calculate expiryDate
+# build stop stream

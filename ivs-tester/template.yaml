@@ -65,6 +65,9 @@ Resources:
             FunctionName: !Ref LambdaRtmpStreamFunction
 
 ## TODO
+# less memory for lambda function
+# HOWTO deal with StreamStopped error and pass through channelArn for deletion?
+# add function to generate channel name
 # ffprobe in parallel?
 # Notification of PlayerURL?
 # Human approval before Delete Channel
