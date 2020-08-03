@@ -8,7 +8,7 @@
     },
     "Wait": {
       "Type": "Wait",
-      "Seconds": 30,
+      "Seconds": 120,
       "Next": "StopStream"
     },
     "StopStream": {
