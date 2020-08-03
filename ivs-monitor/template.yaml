@@ -56,9 +56,3 @@ Resources:
               detail:
                 event_name:
                   - "Stream Start"
-
-## TODO
-# handle stream that has already ended - test in ASL or add "exists" field?
-# conditional.  if running, stop stream
-# build wait state - variable wait on seconds?  or need to calculate expiryDate
-# build stop stream
